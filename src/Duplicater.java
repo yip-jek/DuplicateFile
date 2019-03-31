@@ -136,17 +136,20 @@ public class Duplicater implements Runnable {
 	@SuppressWarnings("resource")
 	private String GenerateFileAlgo(File f) throws DFException {
 		DigestInputStream dig_is = null;
+		byte[]            digest = null;
 
 		m_msgDigest.reset();
 		try {
 			dig_is = new DigestInputStream(new FileInputStream(f), m_msgDigest);
-
 			while ( dig_is.read(m_buffer) > 0 );
+
+			digest = dig_is.getMessageDigest().digest();
+			dig_is.close();
 		} catch ( IOException e ) {
 			throw new DFException(e.toString());
 		}
 
-		return new BigInteger(1, dig_is.getMessageDigest().digest()).toString(16);
+		return new BigInteger(1, digest).toString(16);
 	}
 
 	private void FindDuplicate() {
