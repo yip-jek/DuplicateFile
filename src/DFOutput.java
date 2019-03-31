@@ -10,7 +10,8 @@ import java.util.Map;
 
 public class DFOutput {
 
-	private static final String CHARSET = "UTF-8";
+	private static final char   CHAR_SEPARATOR = '-';
+	private static final String CHARSET        = "UTF-8";
 
 	private Writer m_writer = null;
 
@@ -40,6 +41,22 @@ public class DFOutput {
 		}
 	}
 
+	private void Write(String s) throws DFException {
+		try {
+			m_writer.write(s);
+		} catch ( IOException e ) {
+			throw new DFException(e.toString());
+		}
+	}
+
+	private void Flush() throws DFException {
+		try {
+			m_writer.flush();
+		} catch ( IOException e ) {
+			throw new DFException(e.toString());
+		}
+	}
+
 	public void Close() throws DFException {
 		try {
 			m_writer.close();
@@ -49,32 +66,52 @@ public class DFOutput {
 	}
 
 	public void PrintFileList(ArrayList<FileInfo> list) throws DFException {
-		final int LIST_SIZE = list.size();
-		for ( int i = 0; i < LIST_SIZE; ++i ) {
-			try {
-				m_writer.write((i+1)+") "+list.get(i).GetInfo1());
-				m_writer.flush();
-			} catch (IOException e) {
-				throw new DFException(e.toString());
-			}
+		int           count = 0;
+		StringBuilder buf   = new StringBuilder();
+
+		Write("[THE FILE LIST]\n");
+
+		for ( FileInfo info : list ) {
+			buf.setLength(0);
+			buf.append(++count).append(") ").append(info.GetInfo1()).append('\n');
+			Write(buf.toString());
 		}
+
+		Flush();
 	}
 
-	public void PrintDuplicateFile(HashMap<String, ArrayList<FileInfo> > map_list) {
+	public void PrintDuplicateFile(HashMap<String, ArrayList<FileInfo> > map_list) throws DFException {
+		Write("[DUPLICATE FILE]\n");
+
+		StringBuilder buf = new StringBuilder();
 		for ( Map.Entry<String, ArrayList<FileInfo> > entry : map_list.entrySet() ) {
-			;
+			ArrayList<FileInfo> list = entry.getValue();
+
+			if ( list.size() > 1 ) {
+				buf.setLength(0);
+				buf.append("[").append(Duplicater.ALGORITHM).append("=").append(entry.getKey()).append("]\n");
+				Write(buf.toString());
+
+				for ( FileInfo info : list ) {
+					Write(info.GetInfo2()+"\n");
+				}
+
+				Write("\n");
+			}
 		}
+
+		Flush();
 	}
 
 	public void PrintIntervalLine() throws DFException {
-		try {
-			m_writer.write("\n");
-			m_writer.write("------------------------------------------------------------");
-			m_writer.write("\n");
-			m_writer.flush();
-		} catch ( IOException e ) {
-			throw new DFException(e.toString());
+		StringBuilder buf = new StringBuilder("\n");
+		for ( int i = 0; i < 80; ++i ) {
+			buf.append(CHAR_SEPARATOR);
 		}
+		buf.append("\n");
+
+		Write(buf.toString());
+		Flush();
 	}
 
 }

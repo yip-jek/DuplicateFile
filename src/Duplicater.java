@@ -65,7 +65,7 @@ public class Duplicater implements Runnable {
 	}
 
 	private void InitDupMap() {
-		m_mapDup = new HashMap<String, FileInfo>();
+		m_mapListDup = new HashMap<String, ArrayList<FileInfo> >();
 	}
 
 	private void InitDigest() throws DFException {
@@ -83,6 +83,8 @@ public class Duplicater implements Runnable {
 
 		try {
 			LoadFileList(m_inputs);
+			FindDuplicate();
+			PrintOut();
 		} catch ( DFException e ) {
 			m_win.MessageDialog("THREAD ERROR", e.toString(), JOptionPane.ERROR_MESSAGE);
 			return;
@@ -117,26 +119,18 @@ public class Duplicater implements Runnable {
 		}
 	}
 
-	private int LoadFileList(File[] list) throws DFException {
+	private void LoadFileList(File[] list) throws DFException {
 		if ( list != null ) {
 			for ( File f : list ) {
-				StringBuilder str_buf = new StringBuilder();
-				str_buf.append(++m_counter).append(") ").append(f.getPath());
 
 				if ( f.isDirectory() ) {
-					OutputInfo(str_buf.toString());
-
 					LoadFileList(f.listFiles());
 				} else {
-					str_buf.append(", [SHA-256: ").append(GenerateFileAlgo(f)).append("]");
-					OutputInfo(str_buf.toString());
+					FileInfo info = new FileInfo(f, GenerateFileAlgo(f));
+					m_listFiles.add(info);
 				}
 			}
-
-			return list.length;
 		}
-
-		return 0;
 	}
 
 	@SuppressWarnings("resource")
@@ -153,6 +147,24 @@ public class Duplicater implements Runnable {
 		}
 
 		return new BigInteger(1, dig_is.getMessageDigest().digest()).toString(16);
+	}
+
+	private void FindDuplicate() {
+		for ( FileInfo info : m_listFiles) {
+			if ( m_mapListDup.containsKey(info.GetAlgo()) ) {
+				m_mapListDup.get(info.GetAlgo()).add(info);
+			} else {
+				ArrayList<FileInfo> list = new ArrayList<FileInfo>();
+				list.add(info);
+				m_mapListDup.put(info.GetAlgo(), list);
+			}
+		}
+	}
+
+	private void PrintOut() throws DFException {
+		m_output.PrintDuplicateFile(m_mapListDup);
+		m_output.PrintIntervalLine();
+		m_output.PrintFileList(m_listFiles);
 	}
 
 }
