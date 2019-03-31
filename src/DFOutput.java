@@ -92,8 +92,11 @@ public class DFOutput {
 				buf.append("[").append(Duplicater.ALGORITHM).append("=").append(entry.getKey()).append("]\n");
 				Write(buf.toString());
 
+				int count = 0;
 				for ( FileInfo info : list ) {
-					Write(info.GetInfo2()+"\n");
+					buf.setLength(0);
+					buf.append(++count).append("> ").append(info.GetInfo2()).append('\n');
+					Write(buf.toString());
 				}
 
 				Write("\n");
