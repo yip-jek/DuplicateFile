@@ -1,31 +1,30 @@
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.math.BigInteger;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
 public class Duplicater implements Runnable {
 
-//	private static final String ALGORITHM_MD5    = "MD5";
-	private static final String ALGORITHM_SHA256 = "SHA-256";
-	private static final String CHARSET_OUTPUT   = "UTF-8";
-	private static final int    BUFFER_SIZE      = 256 * 1024;
+//	public static final String ALGORITHM   = "MD5";
+	public static final String ALGORITHM   = "SHA-256";
+	private static final int   BUFFER_SIZE = 256 * 1024;
 
-	private Thread        m_thread    = null;
-	private DFWin         m_win       = null;
-	private File[]        m_inputs    = null;
-	private Writer        m_output    = null;
-	private int           m_counter   = 0;
-	private MessageDigest m_msgDigest = null;
-	private byte[]        m_buffer    = null;
+	private Thread              m_thread    = null;
+	private DFWin               m_win       = null;
+	private File[]              m_inputs    = null;
+	private DFOutput            m_output    = null;
+	private ArrayList<FileInfo> m_listFiles = null;
+	private MessageDigest       m_msgDigest = null;
+	private byte[]              m_buffer    = null;
+
+	private HashMap<String, ArrayList<FileInfo> > m_mapListDup = null;
 
 	public Duplicater(DFWin win, String[] in, String out) throws DFException {
 		m_win = win;
@@ -35,7 +34,9 @@ public class Duplicater implements Runnable {
 
 	private void Init(String[] in, String out) throws DFException {
 		InitInputPath(in);
-		InitOutputPath(out);
+		InitOutput(out);
+		InitFileList();
+		InitDupMap();
 		InitDigest();
 	}
 
@@ -55,33 +56,23 @@ public class Duplicater implements Runnable {
 		}
 	}
 
-	private void InitOutputPath(String out) throws DFException {
-		File file = new File(out);
+	private void InitOutput(String out) throws DFException {
+		m_output = new DFOutput(out);
+	}
 
-		try {
-			if ( file.exists() ) {
-				if ( !file.delete() ) {
-					throw new DFException("Output: delete old file failed!");
-				}
-			}
+	private void InitFileList() {
+		m_listFiles = new ArrayList<FileInfo>();
+	}
 
-			if ( !file.createNewFile() ) {
-				throw new DFException("Output: create new file failed!");
-			}
-
-			FileOutputStream   out_stream = new FileOutputStream(file);
-			OutputStreamWriter os_writer  = new OutputStreamWriter(out_stream, CHARSET_OUTPUT);
-			m_output = new BufferedWriter(os_writer);
-		} catch ( IOException e ) {
-			throw new DFException(e.toString());
-		}
+	private void InitDupMap() {
+		m_mapDup = new HashMap<String, FileInfo>();
 	}
 
 	private void InitDigest() throws DFException {
 		m_buffer = new byte[BUFFER_SIZE];
 
 		try {
-			m_msgDigest = MessageDigest.getInstance(ALGORITHM_SHA256);
+			m_msgDigest = MessageDigest.getInstance(ALGORITHM);
 		} catch ( NoSuchAlgorithmException e ) {
 			throw new DFException(e.toString());
 		}
@@ -91,7 +82,7 @@ public class Duplicater implements Runnable {
 	public void run() {
 
 		try {
-			CheckFileList(m_inputs);
+			LoadFileList(m_inputs);
 		} catch ( DFException e ) {
 			m_win.MessageDialog("THREAD ERROR", e.toString(), JOptionPane.ERROR_MESSAGE);
 			return;
@@ -99,8 +90,8 @@ public class Duplicater implements Runnable {
 			m_win.SetEnabled(true);
 
 			try {
-				m_output.close();
-			} catch ( IOException e ) {
+				m_output.Close();
+			} catch ( DFException e ) {
 				m_win.MessageDialog("THREAD ERROR", e.toString(), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
@@ -126,7 +117,7 @@ public class Duplicater implements Runnable {
 		}
 	}
 
-	private int CheckFileList(File[] list) throws DFException {
+	private int LoadFileList(File[] list) throws DFException {
 		if ( list != null ) {
 			for ( File f : list ) {
 				StringBuilder str_buf = new StringBuilder();
@@ -135,7 +126,7 @@ public class Duplicater implements Runnable {
 				if ( f.isDirectory() ) {
 					OutputInfo(str_buf.toString());
 
-					CheckFileList(f.listFiles());
+					LoadFileList(f.listFiles());
 				} else {
 					str_buf.append(", [SHA-256: ").append(GenerateFileAlgo(f)).append("]");
 					OutputInfo(str_buf.toString());
@@ -146,15 +137,6 @@ public class Duplicater implements Runnable {
 		}
 
 		return 0;
-	}
-
-	private void OutputInfo(String info) throws DFException {
-		try {
-			m_output.write(info+"\n");
-			m_output.flush();
-		} catch ( IOException e ) {
-			throw new DFException(e.toString());
-		}
 	}
 
 	@SuppressWarnings("resource")

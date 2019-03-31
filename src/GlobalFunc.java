@@ -6,7 +6,7 @@ public class GlobalFunc {
 	public static void ValidatePath(File fp, int wr) throws IOException {
 		// 是否存在？
 		if ( !fp.exists() ) {
-			throw new IOException("Non-existing file path: "+fp.getPath());
+			throw new IOException("Non-existent file path: "+fp.getPath());
 		}
 
 		// 是否为目录？
