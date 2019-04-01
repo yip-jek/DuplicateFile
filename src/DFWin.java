@@ -12,44 +12,44 @@ import javax.swing.JTextField;
 
 public class DFWin {
 
-	private static final int FRAME_WIDTH       = 570;
-	private static final int FRAME_HEIGHT      = 405;
-	private static final int LABEL_IN_POS_X    = 15;
-	private static final int LABEL_IN_POS_Y    = 15;
-	private static final int LABEL_IN_WIDTH    = 100;
-	private static final int LABEL_IN_HEIGHT   = 20;
-	private static final int TEXT_POS_X        = 15;
-	private static final int TEXT_POS_Y        = 35;
-	private static final int TEXT_WIDTH        = 400;
-	private static final int TEXT_HEIGHT       = 260;
-	private static final int LABEL_OUT_POS_X   = 15;
-	private static final int LABEL_OUT_POS_Y   = 310;
-	private static final int LABEL_OUT_WIDTH   = 100;
-	private static final int LABEL_OUT_HEIGHT  = 20;
-	private static final int FIELD_POS_X       = 15;
-	private static final int FIELD_POS_Y       = 330;
-	private static final int FIELD_WIDTH       = 400;
-	private static final int FIELD_HEIGHT      = 30;
-	private static final int BUTTON_CHK_POS_X  = 450;
-	private static final int BUTTON_CHK_POS_Y  = 120;
-	private static final int BUTTON_CHK_WIDTH  = 80;
+	private static final int FRAME_WIDTH = 570;
+	private static final int FRAME_HEIGHT = 405;
+	private static final int LABEL_IN_POS_X = 15;
+	private static final int LABEL_IN_POS_Y = 15;
+	private static final int LABEL_IN_WIDTH = 100;
+	private static final int LABEL_IN_HEIGHT = 20;
+	private static final int TEXT_POS_X = 15;
+	private static final int TEXT_POS_Y = 35;
+	private static final int TEXT_WIDTH = 400;
+	private static final int TEXT_HEIGHT = 260;
+	private static final int LABEL_OUT_POS_X = 15;
+	private static final int LABEL_OUT_POS_Y = 310;
+	private static final int LABEL_OUT_WIDTH = 100;
+	private static final int LABEL_OUT_HEIGHT = 20;
+	private static final int FIELD_POS_X = 15;
+	private static final int FIELD_POS_Y = 330;
+	private static final int FIELD_WIDTH = 400;
+	private static final int FIELD_HEIGHT = 30;
+	private static final int BUTTON_CHK_POS_X = 450;
+	private static final int BUTTON_CHK_POS_Y = 120;
+	private static final int BUTTON_CHK_WIDTH = 80;
 	private static final int BUTTON_CHK_HEIGHT = 30;
-	private static final int BUTTON_CLN_POS_X  = 450;
-	private static final int BUTTON_CLN_POS_Y  = 220;
-	private static final int BUTTON_CLN_WIDTH  = 80;
+	private static final int BUTTON_CLN_POS_X = 450;
+	private static final int BUTTON_CLN_POS_Y = 220;
+	private static final int BUTTON_CLN_WIDTH = 80;
 	private static final int BUTTON_CLN_HEIGHT = 30;
 
 	private static final String TITLE_BUTTON_CHK = "查重";
 	private static final String TITLE_BUTTON_CLN = "清空";
-	private static final String LABEL_INPUT      = "输入路径";
-	private static final String LABEL_OUTPUT     = "输出文件";
+	private static final String LABEL_INPUT = "输入路径";
+	private static final String LABEL_OUTPUT = "输出文件";
 
-	private DFManager  m_mgr         = null;
-	private JFrame     m_frame       = null;
-	private JTextArea  m_textInput   = null;
-	private JTextField m_textOutput  = null;
-	private JButton    m_buttonCheck = null;
-	private JButton    m_buttonClean = null;
+	private DFManager m_mgr = null;
+	private JFrame m_frame = null;
+	private JTextArea m_textInput = null;
+	private JTextField m_textOutput = null;
+	private JButton m_buttonCheck = null;
+	private JButton m_buttonClean = null;
 
 	public DFWin(DFManager mgr) {
 //		JFrame.setDefaultLookAndFeelDecorated(true);
@@ -64,10 +64,16 @@ public class DFWin {
 	}
 
 	private void InitFrame() {
-		m_frame = new JFrame(GlobalDef.PROGRAM_NAME+" "+GlobalDef.VERSION);
+		m_frame = new JFrame(GlobalDef.PROGRAM_NAME + " " + GlobalDef.VERSION);
 		m_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		m_frame.setMinimumSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 		m_frame.setResizable(false);
+
+		// Screen centered
+		Dimension scr_size = Toolkit.getDefaultToolkit().getScreenSize();
+		int f_x = (int)(scr_size.getWidth() - m_frame.getWidth())/2;
+		int f_y = (int)(scr_size.getHeight() - m_frame.getHeight())/2;
+		m_frame.setLocation(f_x, f_y);
 	}
 
 	private void AddPanel() {
@@ -146,7 +152,7 @@ public class DFWin {
 	private void CheckDuplicate() {
 		try {
 			m_mgr.Handle(GetInputText(), GetOutputText());
-		} catch ( DFException e ) {
+		} catch (DFException e) {
 			MessageDialog("ERROR", e.toString(), JOptionPane.ERROR_MESSAGE);
 			SetEnabled(true);
 		}
@@ -159,7 +165,7 @@ public class DFWin {
 
 	private String[] GetInputText() throws DFException {
 		String text = m_textInput.getText().trim();
-		if ( text.isEmpty() ) {
+		if (text.isEmpty()) {
 			throw new DFException("Input text is Blank!");
 		}
 
@@ -168,7 +174,7 @@ public class DFWin {
 
 	private String GetOutputText() throws DFException {
 		String text = m_textOutput.getText().trim();
-		if ( text.isEmpty() ) {
+		if (text.isEmpty()) {
 			throw new DFException("Output text is Blank!");
 		}
 

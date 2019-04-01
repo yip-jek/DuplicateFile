@@ -2,7 +2,7 @@
 public class GlobalDef {
 
 	public static final String PROGRAM_NAME = "DuplicateFile";
-	public static final String VERSION      = "Version 1.6.7";
+	public static final String VERSION      = "Version 1.6.8";
 
 	// 文件读写权限
 	public static final int FILE_READ  = 1;
